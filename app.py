@@ -77,14 +77,20 @@ def log(message):  # simple wrapper for logging to stdout on heroku
 def parse_message(msg, recipient_id):
     if msg.startswith('@help'):
         help_message(recipient_id)
+    elif msg.startswith('@time'):
+        time_message(msg, recipient_id)
     else:
         send_message(recipient_id, "I didn't quite get that, try again?")
 
 def time_message(msg, recipient_id):
     try:
         time = msg[6:]
-        minutes = int(time.split(':')[0])
-        seconds = int(time.split(':')[1])
+        if time.isdigit():
+            minutes = 0
+            seconds = int(time)
+        else:
+            minutes = int(time.split(':')[0])
+            seconds = int(time.split(':')[1])
         time_string = "Stored time of %d minutes, %d seconds for [current date]" % (minutes, seconds)
         send_message(recipient_id, time_string)
     except Exception as e:
