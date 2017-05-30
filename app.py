@@ -78,12 +78,13 @@ def parse_message(msg, recipient_id):
     if msg.startswith('@help'):
         help_message(recipient_id)
     else:
-        send_message(recipient_id, "Message not understood.")
+        send_message(recipient_id, "I didn't quite get that, try again?")
 
 def help_message(recipient_id):
-    help_string = '@time minutes:seconds to log score'
-    help_string += ', @scores to see top scores for today'
-    help_string += ', @help to see this message again'
+    help_string = '\'@time minutes:seconds\' to log score'
+    help_string += ', \'@scores\' to see top scores for today'
+    help_string += ', all scores logged at goo.gl/0Erhtu.'
+    help_string += 'Send \'@help\' to see this message again'
     send_message(recipient_id, help_string)
 
 if __name__ == '__main__':
