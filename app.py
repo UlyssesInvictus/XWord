@@ -80,6 +80,19 @@ def parse_message(msg, recipient_id):
     else:
         send_message(recipient_id, "I didn't quite get that, try again?")
 
+def time_message(msg, recipient_id):
+    try:
+        time = msg[6:]
+        minutes = int(time.split(':')[0])
+        seconds = int(time.split(':')[1])
+        time_string = "Stored time of %d minutes, %d seconds for [current date]" % (minutes, seconds)
+        send_message(recipient_id, time_string)
+    except Exception as e:
+        send_message(recipient_id, "Had trouble parsing your time, try again?")
+
+def score_message(recipient_id):
+    send_message(recipient_id, "Under construction")
+
 def help_message(recipient_id):
     help_string = '\'@time minutes:seconds\' to log score'
     help_string += ', \'@scores\' to see top scores for today'
