@@ -26,10 +26,9 @@ def webhook():
     # endpoint for processing incoming messaging events
 
     data = request.get_json()
-    log(data)  # you may not want to log every incoming message in production, but it's good for testing
+    # log(data)
 
     if data["object"] == "page":
-
         for entry in data["entry"]:
             for messaging_event in entry["messaging"]:
 
@@ -39,23 +38,14 @@ def webhook():
                     recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
                     message_text = messaging_event["message"]["text"]  # the message's text
 
-                    send_message(sender_id, "roger that!")
+                    parse_message(message_text, sender_id)
 
-                if messaging_event.get("delivery"):  # delivery confirmation
-                    pass
-
-                if messaging_event.get("optin"):  # optin confirmation
-                    pass
-
-                if messaging_event.get("postback"):  # user clicked/tapped "postback" button in earlier message
-                    pass
-
-    return "ok", 200
+    return "OK", 200
 
 
 def send_message(recipient_id, message_text):
 
-    log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
+    # log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
@@ -71,7 +61,10 @@ def send_message(recipient_id, message_text):
             "text": message_text
         }
     })
-    r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
+    r = requests.post("https://graph.facebook.com/v2.6/me/messages",
+                      params=params,
+                      headers=headers,
+                      data=data)
     if r.status_code != 200:
         log(r.status_code)
         log(r.text)
@@ -81,6 +74,17 @@ def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
 
+def parse_message(msg, recipient_id):
+    if msg.startswith('@help'):
+        help_message(recipient_id)
+    else:
+        send_message(recipient_id, "Message not understood.")
+
+def help_message(recipient_id):
+    help_string = '@time minutes:seconds to log score'
+    help_string += ', @scores to see top scores for today'
+    help_string += ', @help to see this message again'
+    send_message(recipient_id, help_string)
 
 if __name__ == '__main__':
     app.run(debug=True)
