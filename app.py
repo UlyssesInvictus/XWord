@@ -155,14 +155,18 @@ def get_credentials():
 
 def load_sheet():
     gc = gspread.authorize(get_credentials())
+    log("loaded sheet credentials")
     return gspread.open_by_key('1GV0PtCvpqJaIkSQc4G22MGnPllQoBAkg-i0BaN_jpro').sheet1
 
 def get_name(recipient_id):
+    log("loaded sheet")
     url = "https://graph.facebook.com/v2.6/"
     url += str(recipient_id)
     url += "?fields=first_name,last_name&access_token="
     url += os.environ["PAGE_ACCESS_TOKEN"]
+    log("loaded name url")
     r = requests.get(url)
+    log("loaded name")
     return r['first_name'] + ' ' + r['last_name'][0] + '.'
 
 if __name__ == '__main__':
