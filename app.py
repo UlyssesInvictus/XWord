@@ -83,9 +83,9 @@ def parse_message(msg, recipient_id):
     elif msg.startswith('@time'):
         time_message(msg, recipient_id)
     elif msg.startswith('@mystats'):
-        send_message(load_sheet(), stats_message(recipient_id))
+        send_message(load_sheet(), mystats_message(recipient_id))
     elif msg.startswith('@stats'):
-        send_message(load_sheet(), scores_message(recipient_id))
+        send_message(load_sheet(), stats_message(recipient_id))
     else:
         send_message(recipient_id, "I didn't quite get that, try again?")
 
@@ -96,13 +96,13 @@ def time_message(msg, recipient_id):
             minutes = 0
             seconds = int(time)
         else:
-            minutes = int(time.split(':')[0])
+            minutes = int(time.split(':')[0]) if len(time.split(':')[0]) > 0 else 0
             seconds = int(time.split(':')[1])
         sheet = load_sheet()
         store_time(sheet, get_name(recipient_id), minutes, seconds)
         current_date = current_xword_date()
         time_string = "Stored %d:%d for " % (minutes, seconds)
-        time_string += current_date.strftime("%B/%d")
+        time_string += current_date.strftime("%m/%d")
         time_string += "\n\n"
         time_string += stats_message(sheet, recipient_id)
         send_message(recipient_id, time_string)
@@ -133,13 +133,13 @@ def stats_message(sheet, recipient_id):
     scores = sheet.row_values(row)[2:]
     scores = [(int(s), 3 + i) for i, s in enumerate(scores) if len(s) > 0]
     scores.sort(key=lambda x: x[0])
-    stats_string = ""
+    stats_string = "Today's stats:\n"
     for i, s in enumerate(scores[:3]):
         stats_string += "%d. " % (i + 1)
         stats_string += sheet.cell(1, s[1]).value
         stats_string += ": %d\n" % s[0]
     if len(scores) > 0:
-        stats_string += "Average: %.2f" % (sum([s[0] for s in scores]) * 1.0 / len(scores))
+        stats_string += "\nAverage: %.2fs" % (sum([s[0] for s in scores]) * 1.0 / len(scores))
     return stats_string
 
 def mystats_message(sheet, recipient_id):
