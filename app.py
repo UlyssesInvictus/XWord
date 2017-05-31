@@ -102,6 +102,7 @@ def time_message(msg, recipient_id):
         time_string = "Stored time of %d minutes, %d seconds for [current date]" % (minutes, seconds)
         send_message(recipient_id, time_string)
     except Exception as e:
+        log(e)
         send_message(recipient_id, "Had trouble parsing your time, try again?")
 
 def store_time(sheet, name, minutes, seconds):
@@ -149,9 +150,8 @@ def get_credentials():
     scope = ['https://www.googleapis.com/auth/spreadsheets']
     with open('client_secret.json') as f:
         client_data = json.load(f)
-    log("Loaded client file")
     client_data["private_key"] = os.environ['GOOGLE_SERVICE_PRIVATE_KEY']
-    log("Loaded private key")
+    log("Loaded private key: " + client_data["private_key"])
     credentials = SAC.from_json_keyfile_dict(client_data, scope)
     log("Loaded credentials")
     return credentials
