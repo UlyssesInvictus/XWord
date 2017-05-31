@@ -166,7 +166,7 @@ def get_name(recipient_id):
     log("loaded name url")
     r = requests.get(url)
     log("loaded name")
-    return r.json()['first_name'] + ' ' + r.jsoin()['last_name'][0] + '.'
+    return r.json()['first_name'] + ' ' + r.json()['last_name'][0] + '.'
 
 if __name__ == '__main__':
     app.run(debug=True)
