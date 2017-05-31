@@ -113,6 +113,7 @@ def time_message(msg, recipient_id):
 def store_time(sheet, name, minutes, seconds):
     # find the right row from date/time
     last_written_row = current_row(sheet)
+    current_date = current_xword_date()
     sheet.update_cell(last_written_row, 1, current_date.strftime("%A %B %d, %Y"))
     # find right column
     names = sheet.row_values(1)
