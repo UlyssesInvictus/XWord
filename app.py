@@ -115,7 +115,7 @@ def store_time(sheet, name, minutes, seconds):
     if current_date.hour >= 22:
         current_date += datetime.timedelta(days=1)
     date_string = current_date.strftime("%A %B %d, %Y")
-    if dates[last_written_row] != date_string:
+    if dates[last_written_row - 1] != date_string:
         last_written_row += 1
         sheet.update_cell(last_written_row, 1, current_date.strftime("%A %B %d, %Y"))
     # find right column
@@ -126,6 +126,8 @@ def store_time(sheet, name, minutes, seconds):
             last_written_col += 1
         last_written_col += 1
         sheet.update_cell(1, last_written_col, name)
+    else:
+        last_written_col = names.index(name) + 1
     # input time
     sheet.update_cell(last_written_row, last_written_col, minutes * 60 + seconds)
 
@@ -152,7 +154,6 @@ def get_credentials():
 
 def load_sheet():
     gc = gspread.authorize(get_credentials())
-    log("loaded sheet credentials")
     return gc.open_by_key('1GV0PtCvpqJaIkSQc4G22MGnPllQoBAkg-i0BaN_jpro').sheet1
 
 def get_name(recipient_id):
