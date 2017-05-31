@@ -117,17 +117,15 @@ def store_time(sheet, name, minutes, seconds):
     date_string = current_date.strftime("%A %B %d, %Y")
     if dates[last_written_row] != date_string:
         last_written_row += 1
-        sheet.update_cell(last_written_row + 1, 1, current_date.strftime("%A %B %d, %Y"))
-    last_written_row += 1 # account for 1-indexing
+        sheet.update_cell(last_written_row, 1, current_date.strftime("%A %B %d, %Y"))
     # find right column
     names = sheet.row_values(1)
     if name not in names:
         last_written_col = 2
         while(len(names[last_written_col]) > 0):
             last_written_col += 1
-        last_written_col += 2
+        last_written_col += 1
         sheet.update_cell(1, last_written_col, name)
-    log("Found column")
     # input time
     sheet.update_cell(last_written_row, last_written_col, minutes * 60 + seconds)
 
