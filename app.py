@@ -83,9 +83,9 @@ def parse_message(msg, recipient_id):
     elif msg.startswith('@time'):
         time_message(msg, recipient_id)
     elif msg.startswith('@mystats'):
-        send_message(recipient_id, mystats_message(load_sheet(), recipient_id))
+        send_message(recipient_id, mystats_message(load_workbook(), recipient_id))
     elif msg.startswith('@stats'):
-        send_message(recipient_id, stats_message(load_sheet(), recipient_id))
+        send_message(recipient_id, stats_message(load_workbook().sheet1, recipient_id))
     else:
         send_message(recipient_id, "I didn't quite get that, try again?")
 
@@ -98,7 +98,7 @@ def time_message(msg, recipient_id):
         else:
             minutes = int(time.split(':')[0]) if len(time.split(':')[0]) > 0 else 0
             seconds = int(time.split(':')[1])
-        sheet = load_sheet()
+        sheet = load_workbook().sheet1
         store_time(sheet, get_name(recipient_id), minutes, seconds)
         current_date = current_xword_date()
         time_string = "Stored %d:%d for " % (minutes, seconds)
@@ -116,15 +116,8 @@ def store_time(sheet, name, minutes, seconds):
     current_date = current_xword_date()
     sheet.update_cell(last_written_row, 1, current_date.strftime("%A %B %d, %Y"))
     # find right column
-    names = sheet.row_values(1)
-    if name not in names:
-        last_written_col = 2
-        while(len(names[last_written_col]) > 0):
-            last_written_col += 1
-        last_written_col += 1
-        sheet.update_cell(1, last_written_col, name)
-    else:
-        last_written_col = names.index(name) + 1
+    last_written_col = current_col(sheet, name)
+    sheet.update_cell(1, last_written_col, name)
     # input time
     sheet.update_cell(last_written_row, last_written_col, minutes * 60 + seconds)
 
@@ -142,8 +135,18 @@ def stats_message(sheet, recipient_id):
         stats_string += "\nAverage: %.2fs" % (sum([s[0] for s in scores]) * 1.0 / len(scores))
     return stats_string
 
-def mystats_message(sheet, recipient_id):
-    send_message(recipient_id, "Under construction")
+def mystats_message(workbook, recipient_id):
+    mystats_string = "Your stats:\n"
+    name = get_name(recipient_id)
+    col = current_row(workbook.sheet1) - 1
+    sheet = workbook.get_worksheet(1)
+    mystats_string += "Low: %s\n" % sheet.cell(2, col).value
+    mystats_string += "High: %s\n" % sheet.cell(3, col).value
+    mystats_string += "Average: %s\n" % sheet.cell(4, col).value
+    mystats_string += "Av. (Last 7 days): %s\n" % sheet.cell(5, col).value
+    mystats_string += "Av. (Last 21 days): %s" % sheet.cell(6, col).value
+    return mystats_string
+
 
 def help_message(recipient_id):
     help_string = '\'@time minutes:seconds\' to log score'
@@ -160,9 +163,9 @@ def get_credentials():
     credentials = SAC.from_json_keyfile_dict(client_data, scope)
     return credentials
 
-def load_sheet():
+def load_workbook():
     gc = gspread.authorize(get_credentials())
-    return gc.open_by_key('1GV0PtCvpqJaIkSQc4G22MGnPllQoBAkg-i0BaN_jpro').sheet1
+    return gc.open_by_key('1GV0PtCvpqJaIkSQc4G22MGnPllQoBAkg-i0BaN_jpro')
 
 def get_name(recipient_id):
     url = "https://graph.facebook.com/v2.6/"
@@ -189,6 +192,16 @@ def current_row(sheet):
         last_written_row += 1
     return last_written_row
 
+def current_col(sheet, name):
+    names = sheet.row_values(1)
+    if name not in names:
+        last_written_col = 2
+        while(len(names[last_written_col]) > 0):
+            last_written_col += 1
+        last_written_col += 1
+    else:
+        last_written_col = names.index(name) + 1
+    return last_written_col
 
 if __name__ == '__main__':
     app.run(debug=True)
