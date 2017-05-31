@@ -139,7 +139,7 @@ def stats_message(sheet, recipient_id):
         stats_string += sheet.cell(1, s[1]).value
         stats_string += ": %d\n" % s[0]
     if len(scores) > 0:
-        stats_string += "Average: %.2f" % (sum(scores) * 1.0 / len(scores))
+        stats_string += "Average: %.2f" % (sum([s[0] for s in scores]) * 1.0 / len(scores))
     return stats_string
 
 def mystats_message(sheet, recipient_id):
