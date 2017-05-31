@@ -138,7 +138,7 @@ def stats_message(sheet, recipient_id):
 def mystats_message(workbook, recipient_id):
     mystats_string = "Your stats:\n"
     name = get_name(recipient_id)
-    col = current_row(workbook.sheet1, name) - 1
+    col = current_col(workbook.sheet1, name) - 1
     sheet = workbook.get_worksheet(1)
     mystats_string += "Low: %s\n" % sheet.cell(2, col).value
     mystats_string += "High: %s\n" % sheet.cell(3, col).value
