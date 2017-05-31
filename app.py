@@ -29,7 +29,7 @@ def webhook():
     # endpoint for processing incoming messaging events
 
     data = request.get_json()
-    # log(data)
+    log(data)
 
     if data["object"] == "page":
         for entry in data["entry"]:
@@ -149,8 +149,11 @@ def get_credentials():
     scope = ['https://www.googleapis.com/auth/spreadsheets']
     with open('client_secret.json') as f:
         client_data = json.load(f)
+    log("Loaded client file")
     client_data["private_key"] = os.environ['GOOGLE_SERVICE_PRIVATE_KEY']
+    log("Loaded private key")
     credentials = SAC.from_json_keyfile_dict(client_data, scope)
+    log("Loaded credentials")
     return credentials
 
 def load_sheet():
