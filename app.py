@@ -83,9 +83,9 @@ def parse_message(msg, recipient_id):
     elif msg.startswith('@time'):
         time_message(msg, recipient_id)
     elif msg.startswith('@mystats'):
-        send_message(mystats_message(load_sheet(), recipient_id), recipient_id)
+        send_message(recipient_id, mystats_message(load_sheet(), recipient_id))
     elif msg.startswith('@stats'):
-        send_message(stats_message(load_sheet(), recipient_id), recipient_id)
+        send_message(recipient_id, stats_message(load_sheet(), recipient_id))
     else:
         send_message(recipient_id, "I didn't quite get that, try again?")
 
