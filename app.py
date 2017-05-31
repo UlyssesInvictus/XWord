@@ -151,7 +151,7 @@ def get_credentials():
     with open('client_secret.json') as f:
         client_data = json.load(f)
     client_data["private_key"] = os.environ['GOOGLE_SERVICE_PRIVATE_KEY']
-    log("Loaded private key: " + client_data["private_key"])
+    log("Loaded private key: " + client_data)
     credentials = SAC.from_json_keyfile_dict(client_data, scope)
     log("Loaded credentials")
     return credentials
