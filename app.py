@@ -105,6 +105,7 @@ def time_message(msg, recipient_id):
         send_message(recipient_id, "Had trouble parsing your time, try again?")
 
 def store_time(sheet, name, minutes, seconds):
+    log("Loaded sheet and name")
     # find the right row from date/time
     dates = sheet.col_values(1)
     last_written_row = 1
@@ -118,6 +119,7 @@ def store_time(sheet, name, minutes, seconds):
         last_written_row += 1
         sheet.update_cell(last_written_row + 1, 1, current_date.strftime("%A %B %d, %Y"))
     last_written_row += 1 # account for 1-indexing
+    log("Found row")
     # find right column
     names = sheet.row_values
     if name not in names:
@@ -126,6 +128,7 @@ def store_time(sheet, name, minutes, seconds):
             last_written_col += 1
         last_written_col += 2
         sheet.update_cell(1, last_written_col, name)
+    log("Found column")
     # input time
     sheet.update_cell(last_written_row, last_written_col, minutes * 60 + seconds)
 
