@@ -106,7 +106,6 @@ def time_message(msg, recipient_id):
         send_message(recipient_id, "Had trouble parsing your time, try again?")
 
 def store_time(sheet, name, minutes, seconds):
-    log("Loaded sheet and name")
     # find the right row from date/time
     dates = sheet.col_values(1)
     last_written_row = 1
@@ -167,7 +166,7 @@ def get_name(recipient_id):
     log("loaded name url")
     r = requests.get(url)
     log("loaded name")
-    return r['first_name'] + ' ' + r['last_name'][0] + '.'
+    return r.json()['first_name'] + ' ' + r.jsoin()['last_name'][0] + '.'
 
 if __name__ == '__main__':
     app.run(debug=True)
