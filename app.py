@@ -131,10 +131,10 @@ def store_time(sheet, name, minutes, seconds):
 def stats_message(sheet, recipient_id):
     row = current_row(sheet)
     scores = sheet.row_values(row)[2:]
-    scores = [(s, 3 + i) for s, i in enumerate(scores) if len(s) > 0]
+    scores = [(s, 3 + i) for i, s in enumerate(scores) if len(s) > 0]
     scores.sort(key=lambda x: x[0])
     stats_string = ""
-    for s, i in enumerate(scores[:3]):
+    for i, s in enumerate(scores[:3]):
         stats_string += "%d. " % (i + 1)
         stats_string += sheet.cell(1, s[1]).value
         stats_string += ": %d\n" % s[0]
