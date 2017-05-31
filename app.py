@@ -83,9 +83,9 @@ def parse_message(msg, recipient_id):
     elif msg.startswith('@time'):
         time_message(msg, recipient_id)
     elif msg.startswith('@mystats'):
-        stats_message(recipient_id)
-    elif msg.startswith('@topscores'):
-        scores_message(recipient_id)
+        send_message(load_sheet(), stats_message(recipient_id))
+    elif msg.startswith('@stats'):
+        send_message(load_sheet(), scores_message(recipient_id))
     else:
         send_message(recipient_id, "I didn't quite get that, try again?")
 
@@ -98,8 +98,13 @@ def time_message(msg, recipient_id):
         else:
             minutes = int(time.split(':')[0])
             seconds = int(time.split(':')[1])
-        store_time(load_sheet(), get_name(recipient_id), minutes, seconds)
-        time_string = "Stored time of %d minutes, %d seconds for [current date]" % (minutes, seconds)
+        sheet = load_sheet()
+        store_time(sheet, get_name(recipient_id), minutes, seconds)
+        current_date = current_xword_date()
+        time_string = "Stored %d:%d for " % (minutes, seconds)
+        time_string += current_date.strftime("%B/%d")
+        time_string += "\n\n"
+        time_string += stats_message(sheet, recipient_id)
         send_message(recipient_id, time_string)
     except Exception as e:
         log(e)
@@ -107,17 +112,8 @@ def time_message(msg, recipient_id):
 
 def store_time(sheet, name, minutes, seconds):
     # find the right row from date/time
-    dates = sheet.col_values(1)
-    last_written_row = 1
-    while(len(dates[last_written_row]) > 0):
-        last_written_row += 1
-    current_date = datetime.datetime.today()
-    if current_date.hour >= 22:
-        current_date += datetime.timedelta(days=1)
-    date_string = current_date.strftime("%A %B %d, %Y")
-    if dates[last_written_row - 1] != date_string:
-        last_written_row += 1
-        sheet.update_cell(last_written_row, 1, current_date.strftime("%A %B %d, %Y"))
+    last_written_row = current_row(sheet)
+    sheet.update_cell(last_written_row, 1, current_date.strftime("%A %B %d, %Y"))
     # find right column
     names = sheet.row_values(1)
     if name not in names:
@@ -131,15 +127,26 @@ def store_time(sheet, name, minutes, seconds):
     # input time
     sheet.update_cell(last_written_row, last_written_col, minutes * 60 + seconds)
 
-def scores_message(recipient_id):
-    send_message(recipient_id, "Under construction")
+def stats_message(sheet, recipient_id):
+    row = current_row(sheet)
+    scores = sheet.row_values(row)[2:]
+    scores = [(s, 3 + i) for s, i in enumerate(scores) if len(s) > 0]
+    scores.sort(key=lambda x: x[0])
+    stats_string = ""
+    for s, i in enumerate(scores[:3]):
+        stats_string += "%d. " % (i + 1)
+        stats_string += sheet.cell(1, s[1]).value
+        stats_string += ": %d\n" % s[0]
+    if len(scores) > 0:
+        stats_string += "Average: %.2f" % (sum(scores) * 1.0 / len(scores))
+    return stats_string
 
-def stats_message(recipient_id):
+def mystats_message(sheet, recipient_id):
     send_message(recipient_id, "Under construction")
 
 def help_message(recipient_id):
     help_string = '\'@time minutes:seconds\' to log score'
-    help_string += ', \'@scores\' to see top scores for today'
+    help_string += ', \'@stats\' to see stats for today'
     help_string += ', all scores logged at goo.gl/0Erhtu.'
     help_string += ' Send \'@help\' to see this message again'
     send_message(recipient_id, help_string)
@@ -163,6 +170,24 @@ def get_name(recipient_id):
     url += os.environ["PAGE_ACCESS_TOKEN"]
     r = requests.get(url)
     return r.json()['first_name'] + ' ' + r.json()['last_name'][0] + '.'
+
+def current_xword_date():
+    current_date = datetime.datetime.today()
+    if current_date.hour >= 22:
+        current_date += datetime.timedelta(days=1)
+    return current_date
+
+def current_row(sheet):
+    dates = sheet.col_values(1)
+    last_written_row = 1
+    while(len(dates[last_written_row]) > 0):
+        last_written_row += 1
+    current_date = current_xword_date()
+    date_string = current_date.strftime("%A %B %d, %Y")
+    if dates[last_written_row - 1] != date_string:
+        last_written_row += 1
+    return last_written_row
+
 
 if __name__ == '__main__':
     app.run(debug=True)
