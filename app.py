@@ -1,6 +1,9 @@
 import os
 import sys
 import json
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials as SAC
+import datetime
 
 import requests
 from flask import Flask, request
@@ -79,6 +82,10 @@ def parse_message(msg, recipient_id):
         help_message(recipient_id)
     elif msg.startswith('@time'):
         time_message(msg, recipient_id)
+    elif msg.startswith('@mystats'):
+        stats_message(recipient_id)
+    elif msg.startswith('@topscores'):
+        scores_message(recipient_id)
     else:
         send_message(recipient_id, "I didn't quite get that, try again?")
 
@@ -91,20 +98,69 @@ def time_message(msg, recipient_id):
         else:
             minutes = int(time.split(':')[0])
             seconds = int(time.split(':')[1])
+        store_time(load_sheet(), get_name(recipient_id), minutes, seconds)
         time_string = "Stored time of %d minutes, %d seconds for [current date]" % (minutes, seconds)
         send_message(recipient_id, time_string)
     except Exception as e:
         send_message(recipient_id, "Had trouble parsing your time, try again?")
 
-def score_message(recipient_id):
+def store_time(sheet, name, minutes, seconds):
+    # find the right row from date/time
+    dates = sheet.col_values(1)
+    last_written_row = 1
+    while(len(dates[last_written_row]) > 0):
+        last_written_row += 1
+    current_date = datetime.datetime.today()
+    if current_date.hour >= 22:
+        current_date += datetime.timedelta(days=1)
+    date_string = current_date.strftime("%A %B %d, %Y")
+    if dates[last_written_row] != date_string:
+        last_written_row += 1
+        sheet.update_cell(last_written_row + 1, 1, current_date.strftime("%A %B %d, %Y"))
+    last_written_row += 1 # account for 1-indexing
+    # find right column
+    names = sheet.row_values
+    if name not in names:
+        last_written_col = 2
+        while(len(names[last_written_col]) > 0):
+            last_written_col += 1
+        last_written_col += 2
+        sheet.update_cell(1, last_written_col, name)
+    # input time
+    sheet.update_cell(last_written_row, last_written_col, minutes * 60 + seconds)
+
+def scores_message(recipient_id):
+    send_message(recipient_id, "Under construction")
+
+def stats_message(recipient_id):
     send_message(recipient_id, "Under construction")
 
 def help_message(recipient_id):
     help_string = '\'@time minutes:seconds\' to log score'
     help_string += ', \'@scores\' to see top scores for today'
     help_string += ', all scores logged at goo.gl/0Erhtu.'
-    help_string += 'Send \'@help\' to see this message again'
+    help_string += ' Send \'@help\' to see this message again'
     send_message(recipient_id, help_string)
+
+def get_credentials():
+    scope = ['https://www.googleapis.com/auth/spreadsheets']
+    with open('client_secret.json') as f:
+        client_data = json.load(f)
+    client_data["private_key"] = os.environ['GOOGLE_SERVICE_PRIVATE_KEY']
+    credentials = SAC.from_json_keyfile_dict(client_data, scope)
+    return credentials
+
+def load_sheet():
+    gc = gspread.authorize(get_credentials())
+    return gspread.open_by_key('1GV0PtCvpqJaIkSQc4G22MGnPllQoBAkg-i0BaN_jpro').sheet1
+
+def get_name(recipient_id):
+    url = "https://graph.facebook.com/v2.6/"
+    url += str(recipient_id)
+    url += "?fields=first_name,last_name&access_token="
+    url += os.environ["PAGE_ACCESS_TOKEN"]
+    r = requests.get(url)
+    return r['first_name'] + ' ' + r['last_name'][0] + '.'
 
 if __name__ == '__main__':
     app.run(debug=True)
