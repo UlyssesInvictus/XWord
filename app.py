@@ -150,7 +150,7 @@ def get_credentials():
     scope = ['https://www.googleapis.com/auth/spreadsheets']
     with open('client_secret.json') as f:
         client_data = json.load(f)
-    client_data["private_key"] = os.environ['GOOGLE_SERVICE_PRIVATE_KEY'].replace("\n", "")
+    client_data["private_key"] = os.environ['GOOGLE_SERVICE_PRIVATE_KEY'].replace("\\n", "\n")
     log("Loaded private key: ")
     log(client_data)
     credentials = SAC.from_json_keyfile_dict(client_data, scope)
