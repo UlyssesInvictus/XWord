@@ -151,6 +151,7 @@ def mystats_message(workbook, recipient_id):
 def help_message(recipient_id):
     help_string = '\'@time minutes:seconds\' to log score'
     help_string += ', \'@stats\' to see stats for today'
+    help_string += ', \'@mystats\' to see your overall stats'
     help_string += ', all scores logged at goo.gl/0Erhtu.'
     help_string += ' Send \'@help\' to see this message again'
     send_message(recipient_id, help_string)
