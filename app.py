@@ -119,9 +119,8 @@ def store_time(sheet, name, minutes, seconds):
         last_written_row += 1
         sheet.update_cell(last_written_row + 1, 1, current_date.strftime("%A %B %d, %Y"))
     last_written_row += 1 # account for 1-indexing
-    log("Found row")
     # find right column
-    names = sheet.row_values
+    names = sheet.row_values(1)
     if name not in names:
         last_written_col = 2
         while(len(names[last_written_col]) > 0):
@@ -163,9 +162,7 @@ def get_name(recipient_id):
     url += str(recipient_id)
     url += "?fields=first_name,last_name&access_token="
     url += os.environ["PAGE_ACCESS_TOKEN"]
-    log("loaded name url")
     r = requests.get(url)
-    log("loaded name")
     return r.json()['first_name'] + ' ' + r.json()['last_name'][0] + '.'
 
 if __name__ == '__main__':
