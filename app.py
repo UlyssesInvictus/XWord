@@ -151,19 +151,15 @@ def get_credentials():
     with open('client_secret.json') as f:
         client_data = json.load(f)
     client_data["private_key"] = os.environ['GOOGLE_SERVICE_PRIVATE_KEY'].replace("\\n", "\n")
-    log("Loaded private key: ")
-    log(client_data)
     credentials = SAC.from_json_keyfile_dict(client_data, scope)
-    log("Loaded credentials")
     return credentials
 
 def load_sheet():
     gc = gspread.authorize(get_credentials())
     log("loaded sheet credentials")
-    return gspread.open_by_key('1GV0PtCvpqJaIkSQc4G22MGnPllQoBAkg-i0BaN_jpro').sheet1
+    return gc.open_by_key('1GV0PtCvpqJaIkSQc4G22MGnPllQoBAkg-i0BaN_jpro').sheet1
 
 def get_name(recipient_id):
-    log("loaded sheet")
     url = "https://graph.facebook.com/v2.6/"
     url += str(recipient_id)
     url += "?fields=first_name,last_name&access_token="
